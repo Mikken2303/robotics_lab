@@ -1,40 +1,40 @@
 #!/usr/bin/env python3
 
 from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B,OUTPUT_C, OUTPUT_D, SpeedPercent, MoveTank
-from ev3dev2.sensor.lego import GyroSensor, TouchSensor,LightSensor,UltrasonicSensor
+from ev3dev2.sensor.lego import GyroSensor, TouchSensor, ColorSensor, UltrasonicSensor
 from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 from ev3dev2.display import Display
 
 from time import sleep
 
-
-tank_drive = MoveTank(OUTPUT_A, OUTPUT_B)
+tank_drive = MoveTank(OUTPUT_A, OUTPUT_D)
 
 gyro = GyroSensor(INPUT_4)
 touch = TouchSensor(INPUT_1)
-light = LightSensor(INPUT_3)
+color = ColorSensor(INPUT_3)
 sonic = UltrasonicSensor(INPUT_2)
 display = Display()
 
 
-
 #1
-display.text_pixels("Assignment 1", x=64, y=64)
+display.draw.text((48,13),"Assignment 1", fill='black')
+display.update()
 
 
 #2
-while(touch.is_pressed):
+while(touch.is_released):
     sleep(0.05)
 
 
 #3
 display.clear()
+display.update()
 
 
 #4
 tank_drive.on(SpeedPercent(25), SpeedPercent(25))
 
-while(sonic.distance_centimeters() > 25):
+while(sonic.distance_centimeters > 25):
     sleep(0.05)
 
 tank_drive.off()
@@ -43,7 +43,7 @@ tank_drive.off()
 #5
 tank_drive.on(SpeedPercent(25), SpeedPercent(-25))
 g = gyro.angle
-while(gyro.angle - g < 180):
+while(gyro.angle - g < 170):
     sleep(0.05)
 
 tank_drive.off()
@@ -52,9 +52,9 @@ tank_drive.off()
 tank_drive.on_for_rotations(SpeedPercent(25), SpeedPercent(25), 2)
 
 #7
-tank_drive.on(SpeedPercent(25), SpeedPercent(5))
+tank_drive.on(SpeedPercent(5), SpeedPercent(25))
 g = gyro.angle
-while(gyro.angle - g < 90):
+while(gyro.angle - g > -85):
     sleep(0.05)
 
 tank_drive.off()
@@ -63,23 +63,23 @@ tank_drive.off()
 #8 
 tank_drive.on(SpeedPercent(25), SpeedPercent(25))
 
-while(light.reflected_light_intensity > 30):
+while(color.reflected_light_intensity > 30):
     sleep(0.05)
 
 #9
 tank_drive.off()
 
 #10
-tank_drive.on(SpeedPercent(25), SpeedPercent(-25))
+tank_drive.on(SpeedPercent(-25), SpeedPercent(25))
 g = gyro.angle
-while(gyro.angle - g < 90):
+while(gyro.angle - g > -80):
     sleep(0.05)
 
 tank_drive.off()
 
 #11
 
-tank_drive.on(SpeedPercent(25), SpeedPercent(25))
+tank_drive.on(SpeedPercent(-25), SpeedPercent(-25))
 
 while(touch.is_released):
     sleep(0.05)
