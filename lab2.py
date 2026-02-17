@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
-from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B, SpeedPercent, MoveTank
-from ev3dev2.sensor.lego import GyroSensor, TouchSensor
-from ev3dev2.sensor import INPUT_4, INPUT_1
+from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B,OUTPUT_C, OUTPUT_D SpeedPercent, MoveTank
+from ev3dev2.sensor.lego import GyroSensor, TouchSensor,LightSensor,UltrasonicSensor
+from ev3dev2.sensor import INPUT_1, INPUT_2, INPUT_3, INPUT_4
 
 from time import sleep
 
 
 tank_drive = MoveTank(OUTPUT_A, OUTPUT_B)
+
 gyro = GyroSensor(INPUT_4)
 touch = TouchSensor(INPUT_1)
+light = LightSensor(INPUT_2)
+sonic = UltrasonicSensor(INPUT_3)
+
+
 
 tank_drive.on(SpeedPercent(25), SpeedPercent(10))
 
