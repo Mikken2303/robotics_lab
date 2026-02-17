@@ -43,7 +43,7 @@ tank_drive.off()
 #5
 tank_drive.on(SpeedPercent(25), SpeedPercent(-25))
 g = gyro.angle
-while(gyro.angle - g < 170):
+while(gyro.angle - g < 168):
     sleep(0.05)
 
 tank_drive.off()
@@ -65,9 +65,10 @@ tank_drive.on(SpeedPercent(25), SpeedPercent(25))
 
 while(color.reflected_light_intensity > 30):
     sleep(0.05)
+tank_drive.off()
 
 #9
-tank_drive.off()
+sleep(2)
 
 #10
 tank_drive.on(SpeedPercent(-25), SpeedPercent(25))
