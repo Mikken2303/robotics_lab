@@ -72,13 +72,3 @@ tank_drive.off()
 
 
 
-while(True):
-    if(touch.is_pressed):
-        tank_drive.off()
-
-        tank_drive.on_for_seconds(SpeedPercent(-25), SpeedPercent(-25), 1)
-
-       
-        tank_drive.on(SpeedPercent(25), SpeedPercent(10))
-
-    sleep(0.01)    
