@@ -7,83 +7,77 @@ from ev3dev2.display import Display
 
 from time import sleep
 
+
+
+# move the robot
 tank_drive = MoveTank(OUTPUT_A, OUTPUT_D)
 
+# gyroscope sensor 
 gyro = GyroSensor(INPUT_4)
+
+# touch sensor (rear)?
 touch = TouchSensor(INPUT_1)
+
+# light sensor (down)
 color = ColorSensor(INPUT_3)
+
+#sonar sensor (front)
 sonic = UltrasonicSensor(INPUT_2)
+
+#display for text
 display = Display()
 
+# drive until the condition is satisfied
+def drive_until(drive, cond, speed):
+    drive.on(SpeedPercent(speed), SpeedPercent(speed))
+    while not cond():
+        sleep(0.05)
+    drive.off()
 
-#1
+# make a turn using the gyro
+def turn(drive, angle, speedL, speedR):
+    drive.on(SpeedPercent(speedL), SpeedPercent(speedR))
+    g = gyro.angle
+    while(gyro.angle - g < angle):
+        sleep(0.05)
+    drive.off()
+
+
+#1 Print “Assignment 1” on the screen
 display.draw.text((48,13),"Assignment 1", fill='black')
 display.update()
 
 
-#2
+#2 Wait for a button to be pressed
 while(touch.is_released):
     sleep(0.05)
 
 
-#3
+#3 Clear the screen
 display.clear()
 display.update()
 
 
-#4
-tank_drive.on(SpeedPercent(25), SpeedPercent(25))
+#4 Move forward until the sonar detects an obstacle at less than 25 cm distance
+drive_until(tank_drive, lambda: sonic.distance_centimeters < 25, 25)
 
-while(sonic.distance_centimeters > 25):
-    sleep(0.05)
+#5 Turn 180 degrees using the gyroscope to measure angle
+turn(tank_drive, 168, 25, -25)
 
-tank_drive.off()
-
-
-#5
-tank_drive.on(SpeedPercent(25), SpeedPercent(-25))
-g = gyro.angle
-while(gyro.angle - g < 168):
-    sleep(0.05)
-
-tank_drive.off()
-
-#6
+#6 Move forward 20 units (1 unit corresponds to 0.1 rotations)
 tank_drive.on_for_rotations(SpeedPercent(25), SpeedPercent(25), 2)
 
-#7
-tank_drive.on(SpeedPercent(5), SpeedPercent(25))
-g = gyro.angle
-while(gyro.angle - g > -85):
-    sleep(0.05)
+#7 Turn 90 degrees to the left
+turn(tank_drive, -85, 5, 25)
 
-tank_drive.off()
+#8 Move forward until detecting a dark surface underneath
+drive_until(tank_drive, color.reflected_light_intensity < 30, 25)
 
-
-#8 
-tank_drive.on(SpeedPercent(25), SpeedPercent(25))
-
-while(color.reflected_light_intensity > 30):
-    sleep(0.05)
-tank_drive.off()
-
-#9
+#9 Stop
 sleep(2)
 
-#10
-tank_drive.on(SpeedPercent(-25), SpeedPercent(25))
-g = gyro.angle
-while(gyro.angle - g > -80):
-    sleep(0.05)
+#10 Rotate 90 degrees to the left
+turn(tank_drive, -80, -25, 25)
 
-tank_drive.off()
-
-#11
-
-tank_drive.on(SpeedPercent(-25), SpeedPercent(-25))
-
-while(touch.is_released):
-    sleep(0.05)
-
-tank_drive.off()
-
+#11 Move backward until the touch sensor causes the robot to stop.
+drive_until(tank_drive, touch.is_pressed, -25)
