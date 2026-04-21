@@ -19,10 +19,6 @@ class PickupPoint:
     def find(self):
         self.found = True
 
-    def update(self):
-        if(self.found == True):
-            self.angle_to_pickup
-
 
 class Arm:
     def __init__(self,motor_o):
@@ -30,11 +26,11 @@ class Arm:
         self.cube_picked_up = False
 
     def pickup(self):
-        self.motor.on_for_rotations(speed=-10, rotations=0.20)
+        self.motor.on_for_rotations(speed=-10, rotations=0.12)
         self.cube_picked_up = True
 
     def putDown(self):
-        self.motor.on_for_rotations(speed=10, rotations=0.20)
+        self.motor.on_for_rotations(speed=10, rotations=0.12)
         self.cube_picked_up = False
     
 
@@ -67,16 +63,21 @@ class DeliveryRobot:
     #one step forward along the line
     def step(self):
         # TODO
-        if(self.color.reflected_light_intensity in range(0,39)):
-            self.tank_drive.on_for_rotations(left_speed=-5, right_speed=5, rotations=0.01)
-        elif(self.color.reflected_light_intensity in range(40,69)):
-            self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.05)
-        elif(self.color.reflected_light_intensity in range(70,100)):
+        if(self.color.reflected_light_intensity in range(0,19)):
             self.tank_drive.on_for_rotations(left_speed=5, right_speed=-5, rotations=0.01)
+        elif(self.color.reflected_light_intensity in range(20,29)):
+            self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.03)
+        elif(self.color.reflected_light_intensity in range(30,100)):
+            self.tank_drive.on_for_rotations(left_speed=-5, right_speed=5, rotations=0.01)
     
-    def step_con(self):
-         light = self.color.reflected_light_intensity
-         self.tank_drive.on_for_rotations(left_speed=self.convert(light), right_speed=self.convert(light)*(-1), rotations=0.01)
+    def turn(self,angle):
+        g = self.gyro.angle
+        self.tank_drive.on(SpeedPercent(-25), SpeedPercent(25))
+        while(abs(self.gyro.angle - g) < angle):
+            sleep(0.05)
+        self.tank_drive.off()
+
+
 
     # find and pickup the cube (optionally the delivery point as well)
     def search(self):
@@ -84,28 +85,41 @@ class DeliveryRobot:
             #red pickup
             if(self.color.color == 5):
                 self.pickup.find()
-                for i in range(0,3):
-                    self.step()
-            elif(self.sonic.distance_centimeters < 10):
-                for i in range(0,3):
-                    self.step()
+            elif(self.sonic.distance_centimeters < 11):
                 self.arm.pickup()
-                    
                 return
 
             self.step()
 
 
+    def go_home(self):
+        while(self.color.color != 4):
+            self.step()
+        self.turn(180)
+
     # ignore the line go straight to the delivery point
     def goto_delivery_point(self):
-        pass
+        self.turn(100)
+        self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.2)
+        while(self.color.color != 5):
+            self.step()
+        self.arm.putDown()
+        self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.5)
+        self.tank_drive.on_for_rotations(left_speed=25, right_speed=5, rotations=1)
+        self.tank_drive.on_for_rotations(left_speed=25, right_speed=25, rotations=1)
+        self.go_home()
+
 
     def deliver(self):
         if(self.pickup.found == False):
-            while(True):
-                if(self.color.color == 2):
-                    self.arm.putDown()
-            self.step()        
+            while(self.color.color != 5):
+                self.step() 
+            self.arm.putDown()
+            self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.5)
+            self.turn(90)
+            self.go_home()
+            return
+                       
 
 
         else:
