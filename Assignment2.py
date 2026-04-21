@@ -30,13 +30,11 @@ class Arm:
         self.cube_picked_up = False
 
     def pickup(self):
-        # TODO
-        self.motor.rotations(1)
+        self.motor.on_for_rotations(speed=-10, rotations=0.20)
         self.cube_picked_up = True
 
     def putDown(self):
-        # TODO
-        self.motor.rotations(-1)
+        self.motor.on_for_rotations(speed=10, rotations=0.20)
         self.cube_picked_up = False
     
 
@@ -62,28 +60,38 @@ class DeliveryRobot:
         self.pickup = PickupPoint(gyro=self.gyro)
 
 
+    def convert(self, light_intensity):
+        return (light_intensity/6)*2 - 5
+        
+
     #one step forward along the line
     def step(self):
         # TODO
-        if(self.color.reflected_light_intensity in range(0,19)):
+        if(self.color.reflected_light_intensity in range(0,39)):
             self.tank_drive.on_for_rotations(left_speed=-5, right_speed=5, rotations=0.01)
-        elif(self.color.reflected_light_intensity in range(20,39)):
+        elif(self.color.reflected_light_intensity in range(40,69)):
             self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.05)
-        elif(self.color.reflected_light_intensity in range(40,100)):
+        elif(self.color.reflected_light_intensity in range(70,100)):
             self.tank_drive.on_for_rotations(left_speed=5, right_speed=-5, rotations=0.01)
     
+    def step_con(self):
+         light = self.color.reflected_light_intensity
+         self.tank_drive.on_for_rotations(left_speed=self.convert(light), right_speed=self.convert(light)*(-1), rotations=0.01)
 
-    # find and pickup the cube (optionaly the delivery point as well)
+    # find and pickup the cube (optionally the delivery point as well)
     def search(self):
         while(True):
+            #red pickup
             if(self.color.color == 5):
                 self.pickup.find()
-            elif(self.sonic.distance_centimeters < 8):
                 for i in range(0,3):
                     self.step()
-                    self.arm.pickup()
+            elif(self.sonic.distance_centimeters < 10):
+                for i in range(0,3):
+                    self.step()
+                self.arm.pickup()
                     
-                    return
+                return
 
             self.step()
 
@@ -94,14 +102,20 @@ class DeliveryRobot:
 
     def deliver(self):
         if(self.pickup.found == False):
-            self.step()
+            while(True):
+                if(self.color.color == 2):
+                    self.arm.putDown()
+            self.step()        
+
+
         else:
             self.goto_delivery_point()
-
 
 
 delivery_robot = DeliveryRobot(left_motor_o=OUTPUT_A, right_motor_o=OUTPUT_B, arm_motor_o=OUTPUT_D, sonic_i=INPUT_1, gyro_i=INPUT_2, color_i=INPUT_4)
 delivery_robot.search()
 delivery_robot.deliver()
 
+while(True):
+    sleep(1)
 
