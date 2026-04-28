@@ -37,7 +37,7 @@ class DeliveryRobot:
     COLOR_RED = 5     # Used to detect  delivery point
 
     # Line following light intensity thresholds
-    LIGHT_TURN_RIGHT = range(0, 14)   # Dark - robot is too far right, steer left
+    LIGHT_TURN_RIGHT = range(0, 15)   # Dark - robot is too far right, steer left
     LIGHT_STRAIGHT = range(16, 35)    # On the line edge - go straight
     LIGHT_TURN_LEFT = range(36, 100)  # Light - robot is too far left, steer right
 
