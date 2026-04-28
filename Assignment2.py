@@ -17,12 +17,12 @@ class Arm:
 
     def pickup(self):
         """Lower the arm to and pick up a cube."""
-        self.motor.on_for_rotations(speed=-10, rotations=0.12)
+        self.motor.on_for_rotations(speed=-10, rotations=0.2)
         self.cube_picked_up = True
 
     def putDown(self):
         """Raise the arm to put down a cube."""
-        self.motor.on_for_rotations(speed=10, rotations=0.12)
+        self.motor.on_for_rotations(speed=10, rotations=0.2)
         self.cube_picked_up = False
 
 
@@ -37,12 +37,12 @@ class DeliveryRobot:
     COLOR_RED = 5     # Used to detect  delivery point
 
     # Line following light intensity thresholds
-    LIGHT_TURN_RIGHT = range(0, 20)   # Dark - robot is too far right, steer left
-    LIGHT_STRAIGHT = range(20, 30)    # On the line edge - go straight
-    LIGHT_TURN_LEFT = range(30, 101)  # Light - robot is too far left, steer right
+    LIGHT_TURN_RIGHT = range(0, 14)   # Dark - robot is too far right, steer left
+    LIGHT_STRAIGHT = range(16, 35)    # On the line edge - go straight
+    LIGHT_TURN_LEFT = range(36, 100)  # Light - robot is too far left, steer right
 
     # Ultrasonic distance threshold (cm) to detect a cube in front of the arm
-    CUBE_DETECT_DISTANCE_CM = 11
+    CUBE_DETECT_DISTANCE_CM = 9
 
     def __init__(self, left_motor_o, right_motor_o, arm_motor_o, gyro_i, color_i, sonic_i):
         # Drive controller for movement
@@ -71,7 +71,7 @@ class DeliveryRobot:
         if light in self.LIGHT_TURN_RIGHT:
             self.tank_drive.on_for_rotations(left_speed=5, right_speed=-5, rotations=0.01)
         elif light in self.LIGHT_STRAIGHT:
-            self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.03)
+            self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.05)
         elif light in self.LIGHT_TURN_LEFT:
             self.tank_drive.on_for_rotations(left_speed=-5, right_speed=5, rotations=0.01)
 
@@ -94,7 +94,9 @@ class DeliveryRobot:
         while True:
             if self.color.color == self.COLOR_RED:
                 self.pickup_found = True
+                self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.15)
             elif self.sonic.distance_centimeters < self.CUBE_DETECT_DISTANCE_CM:
+                self.tank_drive.on_for_rotations(left_speed=5, right_speed=5, rotations=0.05)
                 self.arm.pickup()
                 return
             self.step()
@@ -105,7 +107,7 @@ class DeliveryRobot:
         """
         while self.color.color != self.COLOR_YELLOW:
             self.step()
-        self.turn(180)
+        self.turn(160)
         self.pickup_found = False
 
     def goto_delivery_point(self):
@@ -115,16 +117,24 @@ class DeliveryRobot:
         2. Drive forward until the red zone is found.
         3. Drop the cube, reverse, realign, and return home.
         """
+        self.tank_drive.on_for_rotations(left_speed=25, right_speed=25, rotations=1.2)
         self.turn(100)
         # Short drive to clear the main line before searching for the delivery zone
         self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.2)
         while self.color.color != self.COLOR_RED:
             self.step()
+
+        
+        self.turn(180)
+        self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=1.4)
         self.arm.putDown()
+        self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.2)
+        self.turn(100)
+
         # Reverse away from the drop point, then arc back toward the line going around the cube
-        self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.5)
-        self.tank_drive.on_for_rotations(left_speed=25, right_speed=5, rotations=1)
-        self.tank_drive.on_for_rotations(left_speed=25, right_speed=25, rotations=1)
+        #self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.5)
+        #self.tank_drive.on_for_rotations(left_speed=25, right_speed=5, rotations=1)
+        #self.tank_drive.on_for_rotations(left_speed=20, right_speed=40, rotations=1)
         self.go_home()
 
     def deliver(self):
@@ -137,6 +147,7 @@ class DeliveryRobot:
             # Follow the line to the first red zone encountered and drop the cube there
             while self.color.color != self.COLOR_RED:
                 self.step()
+            self.tank_drive.on_for_rotations(left_speed=-5, right_speed=-5, rotations=0.2)
             self.arm.putDown()
             # Back up slightly, turn, and navigate home
             self.tank_drive.on_for_rotations(left_speed=-25, right_speed=-25, rotations=0.5)
@@ -156,6 +167,6 @@ delivery_robot = DeliveryRobot(
     color_i=INPUT_4
 )
 
-while True:
-    delivery_robot.search()
-    delivery_robot.deliver()
+#while True:
+delivery_robot.search()
+delivery_robot.deliver()
